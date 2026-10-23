@@ -12,6 +12,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface EmailRequestRepository extends JpaRepository<EmailRequestModel, UUID> {
 
+    Optional<EmailRequestModel> findByEmailRequestIdAndUserId(UUID emailRequestId, UUID userId);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select request from EmailRequestModel request where request.emailRequestId = :id")
     Optional<EmailRequestModel> findForUpdate(@Param("id") UUID id);

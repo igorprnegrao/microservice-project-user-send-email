@@ -2,6 +2,8 @@ package negraoipr.com.ms_user.service;
 
 import lombok.RequiredArgsConstructor;
 import negraoipr.com.ms_user.dtos.EmailResultDTO;
+import negraoipr.com.ms_user.dtos.EmailRequestStatusDTO;
+import negraoipr.com.ms_user.dtos.UserCreatedDTO;
 import negraoipr.com.ms_user.models.EmailRequestModel;
 import negraoipr.com.ms_user.models.UserModel;
 import negraoipr.com.ms_user.producers.UserProducer;
@@ -24,7 +26,7 @@ public class UserService {
     private final EmailRequestRepository emailRequestRepository;
 
     @Transactional
-    public UserModel save(UserModel userModel){
+    public UserCreatedDTO save(UserModel userModel){
 
         userModel = userRepository.save(userModel);
 
@@ -36,7 +38,12 @@ public class UserService {
         emailRequestRepository.save(emailRequest);
 
         userProducer.publishMessageEmail(userModel, emailRequest.getEmailRequestId());
-        return userModel;
+        return new UserCreatedDTO(
+                userModel.getUserId(),
+                userModel.getName(),
+                userModel.getEmail(),
+                emailRequest.getEmailRequestId()
+        );
     }
 
     @Transactional
@@ -68,6 +75,17 @@ public class UserService {
         request.setProcessedEventId(result.eventId());
     }
 
+
+    @Transactional(readOnly = true)
+    public EmailRequestStatusDTO findEmailRequest(UUID userId, UUID emailRequestId) {
+        var request = emailRequestRepository
+                .findByEmailRequestIdAndUserId(emailRequestId, userId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Solicitação de email não encontrada para este usuário"));
+
+        return new EmailRequestStatusDTO(
+                request.getEmailRequestId(), request.getUserId(), request.getStatus());
+    }
 
     @Transactional(readOnly = true)
     public UserModel findById(UUID userId) {

@@ -28,7 +28,8 @@ class UserServiceTests {
         saved.setUserId(UUID.randomUUID());
         when(users.save(input)).thenReturn(saved);
 
-        assertSame(saved, service.save(input));
+        var response = service.save(input);
+        assertEquals(saved.getUserId(), response.userId());
 
         var captor = ArgumentCaptor.forClass(EmailRequestModel.class);
         var order = inOrder(users, requests, producer);
@@ -38,6 +39,7 @@ class UserServiceTests {
         assertEquals(saved.getUserId(), request.getUserId());
         assertEquals("PENDING", request.getStatus());
         assertNotNull(request.getEmailRequestId());
+        assertEquals(request.getEmailRequestId(), response.emailRequestId());
         order.verify(producer).publishMessageEmail(saved, request.getEmailRequestId());
     }
 
