@@ -1,0 +1,24 @@
+server:
+  port: ${SERVER_PORT:8081}
+
+spring:
+  config:
+    import: "optional:file:../ms-user/.env-user[.properties]"
+  application:
+    name: ms-user
+  datasource:
+    url: ${POSTGRES_URL}
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+  rabbitmq:
+    addresses: ${RABBITMQ_ADDRESSES}
+broker:
+  queue:
+    email:
+      name: ${RABBITMQ_EMAIL_QUEUE:default.email}
+    email-result:
+      name: ${RABBITMQ_EMAIL_RESULT_QUEUE:default.email.result}
